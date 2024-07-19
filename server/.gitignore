@@ -1,0 +1,8 @@
+# Build files
+/build
+/dist
+/.vs
+
+# C# Build artifacts
+/bin
+/obj
