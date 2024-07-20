@@ -7,7 +7,6 @@ export default()=>{
       <div>
 <Routes>
     <Route path="/" element={<Login></Login>}/>
-    <Route path="/login" element={<Login></Login>}/>
     <Route path="/toysGrid" element={<ToysGrid></ToysGrid>}/>
 </Routes>
    </div>)

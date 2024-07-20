@@ -19,7 +19,6 @@ import ToysGrid from './ToysGrid';
 const basicUsersUrl='https://localhost:44381/api/users'
 
 function Copyright(props) {
-
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
@@ -36,11 +35,10 @@ const defaultTheme = createTheme();
 
 export default function Login() {
   const navigate = useNavigate();
-
   const fetchUserFromDatabase = async (password, name) => {
     debugger
-    axios.get(`${basicUsersUrl}/GetByPassword/${password}`)
-      .than((response) => {
+    await axios.get(`${basicUsersUrl}/GetByPassword/${password}`)
+      .then((response) => {
         console.log(".than")
         const userData = response.data;
         if (userData && userData.name == name && userData.role === 1) {

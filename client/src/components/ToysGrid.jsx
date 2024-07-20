@@ -25,24 +25,26 @@ import {
 const basicProductsUrl='https://localhost:44381/api/products'
 
 function EditToolbar(props) {
+
   const { setRows, setRowModesModel } = props;
 
-  const handleClick = () => {
+  const handleClick = async() => {
     const id = randomId();
     setRows((oldRows) => [...oldRows, {
       id: '', name: '', title: '', description: '', image: '',
       count: '', price: '', makat: ''
     }]);
+
     setRowModesModel((oldModel) => ({
       ...oldModel,
       [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
     }));
-    axios.post(`${basicProductsUrl}/`, {
+
+    await axios.post(`${basicProductsUrl}/`, {
       name: '', title: '', description: '', picture: '',
       count: '', price: '', makat: ''
     })
   }
-
   return (
     <GridToolbarContainer>
       <Button variant="contained" color="success" onClick={handleClick}>+</Button>
@@ -50,26 +52,30 @@ function EditToolbar(props) {
   );
 }
 
-
 export default function ToysGrid() {
+
   const [rows, setRows] = React.useState([]);
   const [rowModesModel, setRowModesModel] = React.useState({})
 
   useEffect(() => {
-    axios.get(`${basicProductsUrl}/productsOrdersCount`)//add await
-      .then((d) => {
-
-        console.log("data from get:", d)
-        const dataWithRows = d.data.map(item => ({
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${basicProductsUrl}/productsOrdersCount`);
+        const data = response.data;
+        console.log(data);
+        const dataWithRows = data.map(item => ({
           ...item.product,
-          picture:`data:image/jpeg;base64,${item.product.picture}`,
+          picture: `data:image/jpeg;base64,${item.product.picture}`,
           orderQuantity: item.ordersCount
         }));
-        setRows(dataWithRows);
-      })
-
-  }, [])
-
+          setRows(dataWithRows);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchData();
+  }, []);
+  
   const handleRowEditStop = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
       event.defaultMuiPrevented = true;
@@ -84,12 +90,12 @@ export default function ToysGrid() {
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
   };
 
-  const handleDeleteClick = (id) => () => {
+  const handleDeleteClick = (id) =>async () => {
     const confirmed = window.confirm('מאשר מחיקה?');
     if (confirmed) {
       setRows(rows.filter((row) => row.id !== id));
       try {
-        axios.delete(`${basicProductsUrl}/${id}`);
+        await axios.delete(`${basicProductsUrl}/${id}`);
         setRows(rows.filter((row) => row.id !== id));
         console.log("Item deleted successfully");
       } catch (error) {
@@ -112,10 +118,10 @@ export default function ToysGrid() {
     }
   };
 
-  const processRowUpdate = (newRow) => {
+  const processRowUpdate = async(newRow) => {
     const updatedRow = { ...newRow, isNew: false };
     setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
-    axios.put(`${basicProductsUrl}/${newRow.id}`, newRow);
+   await axios.put(`${basicProductsUrl}/${newRow.id}`, newRow);
     return updatedRow;
   };
 
@@ -212,6 +218,8 @@ export default function ToysGrid() {
   ];
 
   return (
+    <>
+    <h1>ניהול צעצועים</h1>
     <Box
       sx={{
         height: 500,
@@ -224,7 +232,6 @@ export default function ToysGrid() {
         },
       }}
     >
-      {EditToolbar}
       <DataGrid
       key="id"
         rows={rows}
@@ -247,6 +254,9 @@ export default function ToysGrid() {
           },
         }}
       />
+     
     </Box>
+    {EditToolbar}
+    </>
   );
 }
